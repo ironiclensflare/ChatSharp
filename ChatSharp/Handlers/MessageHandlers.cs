@@ -13,6 +13,7 @@ namespace ChatSharp.Handlers
             client.SetHandler("NOTICE", HandleNotice);
             client.SetHandler("PRIVMSG", HandlePrivmsg);
             client.SetHandler("MODE", HandleMode);
+            //client.SetHandler("421", HandleInfo);
             //client.SetHandler("324", HandleMode);
             client.SetHandler("NICK", HandleNick);
             client.SetHandler("QUIT", HandleQuit);
@@ -20,6 +21,7 @@ namespace ChatSharp.Handlers
             client.SetHandler("432", HandleErronousNick);
             client.SetHandler("433", HandleErronousNick);
             client.SetHandler("436", HandleErronousNick);
+            client.SetHandler("TWITCH", HandleTwitchMessage);
 
             // MOTD Handlers
             client.SetHandler("375", MOTDHandlers.HandleMOTDStart);
@@ -58,6 +60,11 @@ namespace ChatSharp.Handlers
             // Server handlers
             client.SetHandler("004", ServerHandlers.HandleMyInfo);
             client.SetHandler("005", ServerHandlers.HandleISupport);
+        }
+
+        public static void HandleInfo(IrcClient client, IrcMessage message)
+        {
+            throw new NotImplementedException();
         }
 
         public static void HandleNick(IrcClient client, IrcMessage message)
@@ -223,6 +230,13 @@ namespace ChatSharp.Handlers
                         client.User.Mode = client.User.Mode.Replace(c.ToString(), string.Empty);
                 }
             }
+        }
+
+        public static void HandleTwitchMessage(IrcClient client, IrcMessage message)
+        {
+            var twitchMessage = new TwitchMessageEventArgs(message.RawMessage);
+            
+            client.OnTwitchMessageReceived(twitchMessage);
         }
     }
 }

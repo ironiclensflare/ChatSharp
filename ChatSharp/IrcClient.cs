@@ -278,6 +278,7 @@ namespace ChatSharp
         {
             OnRawMessageRecieved(new RawMessageEventArgs(rawMessage, false));
             var message = new IrcMessage(rawMessage);
+
             if (Handlers.ContainsKey(message.Command.ToUpper()))
                 Handlers[message.Command.ToUpper()](this, message);
             else
@@ -364,6 +365,16 @@ namespace ChatSharp
         {
             if (NetworkError != null) NetworkError(this, e);
         }
+
+        /// <summary>
+        /// Occurs when a Twitch message is received.
+        /// </summary>
+        public event EventHandler<TwitchMessageEventArgs> TwitchMessageReceived;
+        internal void OnTwitchMessageReceived(TwitchMessageEventArgs e)
+        {
+            if (TwitchMessageReceived != null) TwitchMessageReceived(this, e);
+        }
+        
         /// <summary>
         /// Occurs when a raw message is sent.
         /// </summary>

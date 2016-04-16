@@ -33,6 +33,12 @@ namespace ChatSharp
         {
             RawMessage = rawMessage;
 
+            if (rawMessage.StartsWith("@color"))
+            {
+                Command = "TWITCH";
+                return;
+            }
+
             if (rawMessage.StartsWith(":"))
             {
                 Prefix = rawMessage.Substring(1, rawMessage.IndexOf(' ') - 1);
