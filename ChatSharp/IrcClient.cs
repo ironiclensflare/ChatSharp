@@ -278,9 +278,15 @@ namespace ChatSharp
         {
             OnRawMessageRecieved(new RawMessageEventArgs(rawMessage, false));
             var message = new IrcMessage(rawMessage);
-
+            
             if (Handlers.ContainsKey(message.Command.ToUpper()))
                 Handlers[message.Command.ToUpper()](this, message);
+
+            else if (message.Command.StartsWith("@badges"))
+            {
+                // Means this is probably a Twitch message
+                Handlers["TWITCH"](this, message);
+            }
             else
             {
                 // TODO: Fire an event or something
@@ -372,9 +378,18 @@ namespace ChatSharp
         public event EventHandler<TwitchMessageEventArgs> TwitchMessageReceived;
         internal void OnTwitchMessageReceived(TwitchMessageEventArgs e)
         {
-            if (TwitchMessageReceived != null) TwitchMessageReceived(this, e);
+            TwitchMessageReceived?.Invoke(this, e);
         }
-        
+
+        /// <summary>
+        /// Occurs when a Twitch resub is received.
+        /// </summary>
+        public event EventHandler<TwitchResubEventArgs> TwitchResubReceived;
+        internal void OnTwitchResubReceived(TwitchResubEventArgs e)
+        {
+            TwitchResubReceived?.Invoke(this, e);
+        }
+
         /// <summary>
         /// Occurs when a raw message is sent.
         /// </summary>

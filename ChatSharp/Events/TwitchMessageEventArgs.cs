@@ -39,30 +39,64 @@ namespace ChatSharp.Events
         /// </summary>
         public string Message { get; set; }
 
-        internal TwitchMessageEventArgs(string rawMessage)
+        /// <summary>
+        /// Constructs a TwitchMessageEventArgs instance from a raw IRC message.
+        /// </summary>
+        /// <param name="rawMessage"></param>
+        public TwitchMessageEventArgs(string rawMessage)
         {
-            var parsedResponse = rawMessage.Split(':');
-            var rawHeaders = parsedResponse[0];
+            var parsedMessage = rawMessage.Split(new[] { " :" }, StringSplitOptions.None);
+            var parsedHeaders = TwitchMessageHelpers.ParseTwitchHeaders(parsedMessage[0]);
 
             // If message contains ':'s we want to preserve them after splitting the raw message.
-            if (parsedResponse.Length == 3)
-            {
-                Message = parsedResponse[2];
-            }
-            else
-            {
-                Message = string.Join(":", parsedResponse.Skip(2));
-            }
-
-            var headers = ParseTwitchHeaders(rawHeaders);
-            Username = headers["display-name"];
-            Color = headers["@color"];
-            Mod = headers["mod"].Equals("1") || headers["room-id"].Equals(headers["user-id"]);
-            Subscriber = headers["subscriber"].Equals("1");
-            Turbo = headers["turbo"].Equals("1");
+            Message = string.Join(" :", parsedMessage.Skip(2));
+            
+            Username = parsedHeaders["display-name"];
+            Color = parsedHeaders["color"];
+            Mod = parsedHeaders["mod"].Equals("1") || parsedHeaders["room-id"].Equals(parsedHeaders["user-id"]);
+            Subscriber = parsedHeaders["subscriber"].Equals("1");
+            Turbo = parsedHeaders["turbo"].Equals("1");
         }
+    }
 
-        private Dictionary<string, string> ParseTwitchHeaders(string rawHeaders)
+    /// <summary>
+    /// Describes a Twitch resub notification we have received.
+    /// </summary>
+    public class TwitchResubEventArgs : EventArgs
+    {
+        /// <summary>
+        /// The user's name.
+        /// </summary>
+        public string Username { get; set; }
+
+        /// <summary>
+        /// The number of months the user has been subscribed.
+        /// </summary>
+        public int Months { get; set; }
+
+        /// <summary>
+        /// The message that was sent.
+        /// </summary>
+        public string Message { get; set; }
+
+        /// <summary>
+        /// Constructs a TwitchResubEventArgs instance from a raw IRC message.
+        /// </summary>
+        /// <param name="rawMessage"></param>
+        public TwitchResubEventArgs(string rawMessage)
+        {
+            var parsedMessage = rawMessage.Split(new[] { " :" }, StringSplitOptions.None);
+            var parsedHeaders = TwitchMessageHelpers.ParseTwitchHeaders(parsedMessage[0]);
+
+            Username = parsedHeaders["display-name"];
+            Months = int.Parse(parsedHeaders["msg-param-months"]);
+            Message = string.Join(" :", parsedMessage.Skip(2));
+        }
+    }
+
+    internal static class TwitchMessageHelpers
+    {
+        internal static Dictionary<string, string> ParseTwitchHeaders(string rawHeaders)
         {
             var headers = new Dictionary<string, string>();
 
