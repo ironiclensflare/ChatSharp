@@ -236,15 +236,15 @@ namespace ChatSharp.Handlers
         public static void HandleTwitchMessage(IrcClient client, IrcMessage message)
         {
             // Check for exactly one occurrence of PRIVMSG/USERNOTICE to help prevent exploiting
-            var containsPrivMsg = message.RawMessage.LastIndexOf("PRIVMSG", StringComparison.Ordinal)
-                                  != message.RawMessage.IndexOf("PRIVMSG", StringComparison.Ordinal);
+            var isPrivMsg = message.RawMessage.LastIndexOf("PRIVMSG", StringComparison.Ordinal)
+                                  == message.RawMessage.IndexOf("PRIVMSG", StringComparison.Ordinal);
 
-            var containsUserNotice = message.RawMessage.LastIndexOf("USERNOTICE", StringComparison.Ordinal)
-                                  != message.RawMessage.IndexOf("USERNOTICE", StringComparison.Ordinal);
+            var isUserNotice = message.RawMessage.LastIndexOf("USERNOTICE", StringComparison.Ordinal)
+                                  == message.RawMessage.IndexOf("USERNOTICE", StringComparison.Ordinal);
 
-            if (containsUserNotice && !containsPrivMsg)
+            if (isUserNotice && !isPrivMsg)
                 client.OnTwitchResubReceived(new TwitchResubEventArgs(message.RawMessage));
-            else if (containsPrivMsg)
+            else if (isPrivMsg)
                 client.OnTwitchMessageReceived(new TwitchMessageEventArgs(message.RawMessage));
 
             // If we got here, the message has ambiguous commands and will be ignored
