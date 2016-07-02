@@ -391,6 +391,16 @@ namespace ChatSharp
         }
 
         /// <summary>
+        /// Occurs when a suspicious IRC message is received, usually ambiguous 
+        /// commands (eg PRIVMSG and USERNOTICE) in the same message.
+        /// </summary>
+        public event EventHandler SuspiciousMessageReceived;
+        internal void OnSuspiciousMessageReceived(RawMessageEventArgs e)
+        {
+            SuspiciousMessageReceived?.Invoke(this, e);
+        }
+
+        /// <summary>
         /// Occurs when a raw message is sent.
         /// </summary>
         public event EventHandler<RawMessageEventArgs> RawMessageSent;

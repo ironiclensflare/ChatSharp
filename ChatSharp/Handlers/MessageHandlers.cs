@@ -236,18 +236,21 @@ namespace ChatSharp.Handlers
         public static void HandleTwitchMessage(IrcClient client, IrcMessage message)
         {
             // Check for exactly one occurrence of PRIVMSG/USERNOTICE to help prevent exploiting
-            var isPrivMsg = message.RawMessage.LastIndexOf("PRIVMSG", StringComparison.Ordinal)
-                                  == message.RawMessage.IndexOf("PRIVMSG", StringComparison.Ordinal);
+            var isPrivMsg = message.RawMessage.Contains("PRIVMSG")
+                && (message.RawMessage.LastIndexOf("PRIVMSG", StringComparison.Ordinal)
+                == message.RawMessage.IndexOf("PRIVMSG", StringComparison.Ordinal));
 
-            var isUserNotice = message.RawMessage.LastIndexOf("USERNOTICE", StringComparison.Ordinal)
-                                  == message.RawMessage.IndexOf("USERNOTICE", StringComparison.Ordinal);
+            var isUserNotice = message.RawMessage.Contains("USERNOTICE")
+                && (message.RawMessage.LastIndexOf("USERNOTICE", StringComparison.Ordinal)
+                == message.RawMessage.IndexOf("USERNOTICE", StringComparison.Ordinal));
 
             if (isUserNotice && !isPrivMsg)
                 client.OnTwitchResubReceived(new TwitchResubEventArgs(message.RawMessage));
             else if (isPrivMsg)
                 client.OnTwitchMessageReceived(new TwitchMessageEventArgs(message.RawMessage));
 
-            // If we got here, the message has ambiguous commands and will be ignored
+            // If we got here, the message has ambiguous commands and could be suspicious
+            client.OnSuspiciousMessageReceived(new RawMessageEventArgs(message.RawMessage, false));
         }
     }
 }
